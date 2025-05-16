@@ -8,7 +8,7 @@ env:
   AWS_REGION: us-west-2
   K8S_NAMESPACE: devops
   CLUSTER_DEPLOYMENT_NAME: devops-app
-  JFROG_URL: ${{secrets.ARTIFACTORY_URL}}
+  JFROG_URL: trialsir89a.jfrog.io
   JFROG_REPO: devops-docker                        
   INITIALS: pb                                     
   IMAGE_TAG: ${{ github.sha }} 
