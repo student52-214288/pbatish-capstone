@@ -1,0 +1,67 @@
+name: Deploy to aws Elastic Beanstalks
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run lint
+        run: |
+          flake8 app.py
+
+  deploy:
+    needs: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install awsebcli
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        run: |
+          PYTHONPATH=$(pwd) pytest tests/test_app.py
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY}}
+          aws-region: us-west-2
+
+      - name: Deploy to AWS Elastic Beanstalk
+        run: |
+          eb init -p python-3.12 devops-demo --region us-west-2
+          ENV_NAME="devops-env"
+          TIMEOUT=15
+
+          if eb status $ENV_NAME > /dev/null 2>&1; then
+              echo "Enviorment '$ENV_NAME' already exists. Skipping creation."
+          else
+              echo "Enviorment '$ENV_NAME' does not exist. Creating it..."
+              eb create $ENV_NAME --timeout $TIMEOUT
+          fi
+
+          eb deploy
