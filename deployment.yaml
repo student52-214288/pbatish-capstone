@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-app
+  namespace: devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-app
+  template:
+    metadata:
+      labels:
+        app: devops-app
+    spec:
+      containers:
+        - name: devops-app
+          image: trialsir89a.jfrog.io/devops-docker/pb-devops:latest  
+          ports:
+            - containerPort: 8000
+      imagePullSecrets:
+        - name: jfrog-pull-secret
